@@ -1,0 +1,267 @@
+{
+	"frames": [
+		{
+			"name": "cube_0000.png",
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0001.png",
+			"frame": {
+				"x": 353,
+				"y": 1,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0002.png",
+			"frame": {
+				"x": 705,
+				"y": 1,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0003.png",
+			"frame": {
+				"x": 1,
+				"y": 353,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0004.png",
+			"frame": {
+				"x": 353,
+				"y": 353,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0005.png",
+			"frame": {
+				"x": 705,
+				"y": 353,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0006.png",
+			"frame": {
+				"x": 1,
+				"y": 705,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0007.png",
+			"frame": {
+				"x": 353,
+				"y": 705,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0008.png",
+			"frame": {
+				"x": 705,
+				"y": 705,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0009.png",
+			"frame": {
+				"x": 1057,
+				"y": 1,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0010.png",
+			"frame": {
+				"x": 1057,
+				"y": 353,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		},
+		{
+			"name": "cube_0011.png",
+			"frame": {
+				"x": 1057,
+				"y": 705,
+				"width": 350,
+				"height": 350
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"width": 350,
+				"height": 350
+			},
+			"sourceSize": {
+				"width": 350,
+				"height": 350
+			}
+		}
+	],
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"width": 1408,
+			"height": 1056
+		},
+		"scale": "1"
+	}
+}
