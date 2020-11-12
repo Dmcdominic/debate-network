@@ -22,9 +22,9 @@ var gameState = {
   open_questions: [],
   questions_w_one_stance: [],
   questions_w_two_stance: [],
-  questions_w_one_debator: [],
-  questions_w_two_debator: [],
-  current_debate: {}
+  // questions_w_one_debator: [],
+  // questions_w_two_debator: [],
+  // current_debate: {}
 };
 
 // http://expressjs.com/en/starter/static-files.html
@@ -49,6 +49,11 @@ io.on("connection", function(socket) {
   socket.on("newPlayer", function(obj) {
     //object creation in javascript
     gameState.players[socket.id] = {
+      open_questions: [],
+      questions_w_one_stance: [],
+      questions_w_two_stance: [],
+      // questions_w_one_debator: [],
+      // questions_w_two_debator: []
     };
 
     //gameState.players is an object, not an array or list
@@ -89,67 +94,53 @@ io.on("connection", function(socket) {
   // Add the new question to gameState
   socket.on("new_open_question", function(obj) {
     if (socket.id != null) {
+      obj.contributors = [ socket.id ];
+      obj.owner = null;
+      gameState.players[socket.id].open_questions = [];
       gameState.open_questions.push(obj);
+      try_to_distribute();
     }
   });
 
   socket.on("new_question_w_one_stance", function(obj) {
     if (socket.id != null) {
+      obj.contributors.push(socket.id);
+      obj.owner = null;
+      gameState.players[socket.id].questions_w_one_stance = [];
       gameState.questions_w_one_stance.push(obj);
+      try_to_distribute();
     }
   });
 
   socket.on("new_question_w_two_stance", function(obj) {
     if (socket.id != null) {
+      obj.contributors.push(socket.id);
+      obj.owner = null;
+      gameState.players[socket.id].questions_w_two_stance = [];
       gameState.questions_w_two_stance.push(obj);
+      try_to_distribute();
     }
   });
 
-  socket.on("new_question_w_one_debator", function(obj) {
-    if (socket.id != null) {
-      gameState.questions_w_one_debator.push(obj);
-    }
-  });
+  // socket.on("new_question_w_one_debator", function(obj) {
+  //   if (socket.id != null) {
+  //     obj.contributors.push(socket.id);
+  //     obj.owner = null;
+  //     gameState.players[socket.id].questions_w_one_debator = [];
+  //     gameState.questions_w_one_debator.push(obj);
+  //     try_to_distribute();
+  //   }
+  // });
 
-  socket.on("new_question_w_both_debators", function(obj) {
-    if (socket.id != null) {
-      gameState.questions_w_two_debator.push(obj);
-    }
-  });
-
-
-  // --- SEND CONTENT TO PLAYERS UPON REQUEST ---
-
-  socket.on("get_open_question", function(obj) {
-    if (socket.id != null) {
-      // TODO
-    }
-  });
-
-  socket.on("get_question_w_one_stance", function(obj) {
-    if (socket.id != null) {
-      // TODO
-    }
-  });
-
-  socket.on("get_question_w_two_stance", function(obj) {
-    if (socket.id != null) {
-      // TODO
-    }
-  });
-
-  socket.on("get_question_w_one_debator", function(obj) {
-    if (socket.id != null) {
-      // TODO
-    }
-  });
-
-  socket.on("get_question_w_two_debator", function(obj) {
-    if (socket.id != null) {
-      // TODO
-    }
-  });
-
+  // socket.on("new_question_w_both_debators", function(obj) {
+  //   if (socket.id != null) {
+  //     obj.contributors.push(socket.id);
+  //     obj.owner = null;
+  //     gameState.players[socket.id].questions_w_two_debator = [];
+  //     gameState.questions_w_two_debator.push(obj);
+  //     try_to_distribute();
+  //   }
+  // });
 
   //setInterval calls the function at the given interval in time
   //the server sends the whole game state to all players
@@ -163,3 +154,63 @@ io.on("connection", function(socket) {
 var listener = http.listen(3000, function() {
   console.log("Your app is listening on port " + listener.address().port);
 });
+
+
+// Iterates over all the current questions and tries to distribute any that aren't owned
+function try_to_distribute() {
+  for (let q of gameState.open_questions) {
+    if (q.owner) continue;
+    for (let socketID in gameState.players) {
+      let player = gameState.players[socketID];
+      if (player.open_questions.length > 0) continue;
+      if (q.contributors.includes(socketID)) continue;
+      q.owner = socketID;
+      player.open_questions.push(q);
+      break;
+    }
+  }
+  for (let q of gameState.questions_w_one_stance) {
+    if (q.owner) continue;
+    for (let socketID in gameState.players) {
+      let player = gameState.players[socketID];
+      if (player.questions_w_one_stance.length > 0) continue;
+      if (q.contributors.includes(socketID)) continue;
+      q.owner = socketID;
+      player.questions_w_one_stance.push(q);
+      break;
+    }
+  }
+  for (let q of gameState.questions_w_two_stance) {
+    if (q.owner) continue;
+    for (let socketID in gameState.players) {
+      let player = gameState.players[socketID];
+      if (player.questions_w_two_stance.length > 0) continue;
+      if (q.contributors.includes(socketID)) continue;
+      q.owner = socketID;
+      player.questions_w_two_stance.push(q);
+      break;
+    }
+  }
+  // for (let q of gameState.questions_w_one_debator) {
+  //   if (q.owner) continue;
+  //   for (let socketID in gameState.players) {
+  //     let player = gameState.players[socketID];
+  //     if (player.questions_w_one_debator.length > 0) continue;
+  //     if (q.contributors.includes(socketID)) continue;
+  //     q.owner = socketID;
+  //     player.questions_w_one_debator.push(q);
+  //     break;
+  //   }
+  // }
+  // for (let q of gameState.questions_w_two_debator) {
+  //   if (q.owner) continue;
+  //   for (let socketID in gameState.players) {
+  //     let player = gameState.players[socketID];
+  //     if (player.questions_w_two_debator.length > 0) continue;
+  //     if (q.contributors.includes(socketID)) continue;
+  //     q.owner = socketID;
+  //     player.questions_w_two_debator.push(q);
+  //     break;
+  //   }
+  // }
+}

@@ -8,13 +8,15 @@
 //create a socket connection
 var socket;
 //I send updates at the same rate as the server update
-var UPDATE_TIME = 1000 / 3;
+// var UPDATE_TIME = 1000 / 3;
 
 // The current state of the game
 var saved_state;
 
 // input elements
-var input;
+var input, input2, input3, input4, input5;
+var prompt, prompt2, prompt3, prompt4, prompt5;
+var button, button2, button3, button4, button5;
 
 
 
@@ -41,30 +43,76 @@ function setup() {
   socket.open();
 
   //every x time I update the server on my position
-  setInterval(function() {
-    // TODO - update this with some other state data? Or don't send until you've typed/submitted something
-    socket.emit("clientUpdate", {
-    });
-  }, UPDATE_TIME);
+  // setInterval(function() {
+  //   // TODO - update this with some other state data? Or don't send until you've typed/submitted something
+  //   socket.emit("clientUpdate", {
+  //   });
+  // }, UPDATE_TIME);
 
   // ----- Canvas setup -----
   //let c = createCanvas(displayWidth, displayHeight);
   let c = createCanvas(windowWidth, windowHeight);
   c.position(0, 0);
   
-  // Set up input field
-  input = createInput();
-  input.position(20, 65);
+  let y_offset = 5;
 
-  let button = createButton('submit');
-  button.position(input.x + input.width, 65);
-  button.mousePressed(on_submit);
-
+  // Set up "new question" input field
   let greeting = createElement('h2', 'Enter a question:');
-  greeting.position(20, 5);
+  greeting.position(20, y_offset);
+  y_offset += 60;
 
-  textAlign(CENTER);
-  textSize(50);
+  input = createInput();
+  input.position(20, y_offset);
+
+  button = createButton('submit');
+  button.position(input.x + input.width, y_offset);
+  button.mousePressed(on_submit);
+  y_offset += 90;
+  
+  // Set up "first stance" input field
+  greeting = createElement('h2', 'Enter a stance:');
+  greeting.position(20, y_offset);
+  y_offset += 40;
+
+  prompt2 = createElement('h3', '<i>(waiting for question)</i>');
+  prompt2.position(20, y_offset);
+  y_offset += 60;
+
+  input2 = createInput();
+  input2.position(20, y_offset);
+
+  button2 = createButton('submit');
+  button2.position(input.x + input.width, y_offset);
+  button2.mousePressed(on_submit); // TODO - this needs to call a different function
+
+  y_offset += 90;
+  
+  // Set up "second stance" input field
+  greeting = createElement('h2', 'Enter an opposing stance:');
+  greeting.position(20, y_offset);
+  y_offset += 40;
+
+  prompt3 = createElement('h3', '<i>(waiting for question)</i>');
+  prompt3.position(20, y_offset);
+  y_offset += 60;
+
+  input3 = createInput();
+  input3.position(20, y_offset);
+
+  button3 = createButton('submit');
+  button3.position(input.x + input.width, y_offset);
+  button3.mousePressed(on_submit); // TODO - this needs to call a different function
+
+  y_offset += 90;
+  
+  // Set up "you are debating" input field
+  greeting = createElement('h2', 'Debate your given stance for this question:');
+  greeting.position(20, y_offset);
+  y_offset += 40;
+
+  prompt4 = createElement('h3', '<i>(waiting for question)</i>');
+  prompt4.position(20, y_offset);
+  y_offset += 60;
 }
 
 
@@ -84,8 +132,40 @@ function draw() {
 // Called when the "submit" button is pressed
 function on_submit() {
   let text_in = input.value();
-  // TODO - use the input value
   input.value('');
+  // Send the input to the server
+  socket.emit("new_open_question", {
+    question: text_in
+  });
+}
+
+
+// Updates the text of each prompt
+function update_prompts() {
+  // check open_questions
+  prompt2.html('<i>(waiting for question)</i>');
+  for (let q of saved_state.open_questions) {
+    if (q.owner == socket.id) {
+      prompt2.html('Your question: <i>' + q.question + '</i>');
+      break;
+    }
+  }
+  // check questions_w_one_stance
+  prompt3.html('<i>(waiting for question)</i>');
+  for (let q of saved_state.questions_w_one_stance) {
+    if (q.owner == socket.id) {
+      prompt3.html('Your question: <i>' + q.question + '</i>\nThe first stance: <i>' + q.stances[0] + '</i>');
+      break;
+    }
+  }
+  // check questions_w_two_stance
+  prompt4.html('<i>(waiting for question)</i>');
+  for (let q of saved_state.questions_w_two_stance) {
+    if (q.owner == socket.id) {
+      prompt4.html('Your question: <i>' + q.question + '</i>\nThe first stance: <i>' + q.stances[0] + '</i>\nThe second stance: <i>' + q.stances[1] + '</i>');
+      break;
+    }
+  }
 }
 
 
@@ -119,6 +199,7 @@ function onConnect() {
 function onMessage(msg) {
   if (socket.id) {
     console.log("Message from server: " + msg);
+    update_prompts();
   }
 }
 
@@ -127,4 +208,5 @@ function updateState(state) {
   // console.log("state message received! (my socket.id: " + socket.id + ")");
   // console.log(state);
   saved_state = state;
+  update_prompts();
 }
