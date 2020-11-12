@@ -17,7 +17,14 @@ var UPDATE_TIME = 1000 / 3;
 //We want the server to keep track of the whole game state and the clients just to send updates
 //in this case the game state are the coordinates of each player
 var gameState = {
-  players: {}
+  players: {},
+  // Questions and prompts saved
+  open_questions: [],
+  questions_w_one_stance: [],
+  questions_w_two_stance: [],
+  questions_w_one_debator: [],
+  questions_w_two_debator: [],
+  current_debate: {}
 };
 
 // http://expressjs.com/en/starter/static-files.html
@@ -42,8 +49,6 @@ io.on("connection", function(socket) {
   socket.on("newPlayer", function(obj) {
     //object creation in javascript
     gameState.players[socket.id] = {
-      x: obj.x,
-      y: obj.y
     };
 
     //gameState.players is an object, not an array or list
@@ -75,10 +80,76 @@ io.on("connection", function(socket) {
   socket.on("clientUpdate", function(obj) {
     // console.log("clientUpdate received!");
     if (socket.id != null) {
-      gameState.players[socket.id].x = obj.x;
-      gameState.players[socket.id].y = obj.y;
     }
   });
+
+
+  // --- RECEIVE NEW CONTENT FROM PLAYERS ---
+
+  // Add the new question to gameState
+  socket.on("new_open_question", function(obj) {
+    if (socket.id != null) {
+      gameState.open_questions.push(obj);
+    }
+  });
+
+  socket.on("new_question_w_one_stance", function(obj) {
+    if (socket.id != null) {
+      gameState.questions_w_one_stance.push(obj);
+    }
+  });
+
+  socket.on("new_question_w_two_stance", function(obj) {
+    if (socket.id != null) {
+      gameState.questions_w_two_stance.push(obj);
+    }
+  });
+
+  socket.on("new_question_w_one_debator", function(obj) {
+    if (socket.id != null) {
+      gameState.questions_w_one_debator.push(obj);
+    }
+  });
+
+  socket.on("new_question_w_both_debators", function(obj) {
+    if (socket.id != null) {
+      gameState.questions_w_two_debator.push(obj);
+    }
+  });
+
+
+  // --- SEND CONTENT TO PLAYERS UPON REQUEST ---
+
+  socket.on("get_open_question", function(obj) {
+    if (socket.id != null) {
+      // TODO
+    }
+  });
+
+  socket.on("get_question_w_one_stance", function(obj) {
+    if (socket.id != null) {
+      // TODO
+    }
+  });
+
+  socket.on("get_question_w_two_stance", function(obj) {
+    if (socket.id != null) {
+      // TODO
+    }
+  });
+
+  socket.on("get_question_w_one_debator", function(obj) {
+    if (socket.id != null) {
+      // TODO
+    }
+  });
+
+  socket.on("get_question_w_two_debator", function(obj) {
+    if (socket.id != null) {
+      // TODO
+    }
+  });
+
 
   //setInterval calls the function at the given interval in time
   //the server sends the whole game state to all players
