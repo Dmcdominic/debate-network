@@ -56,8 +56,13 @@ function setup() {
   
   let y_offset = 5;
 
+  // Title
+  let greeting = createElement('h1', 'DEBATE NETWORK');
+  greeting.position(20, y_offset);
+  y_offset += 60;
+
   // Set up "new question" input field
-  let greeting = createElement('h2', 'Enter a question:');
+  greeting = createElement('h2', 'Enter a question:');
   greeting.position(20, y_offset);
   y_offset += 60;
 
@@ -83,7 +88,7 @@ function setup() {
 
   button2 = createButton('submit');
   button2.position(input.x + input.width, y_offset);
-  button2.mousePressed(on_submit); // TODO - this needs to call a different function
+  button2.mousePressed(on_submit2);
 
   y_offset += 90;
   
@@ -101,7 +106,7 @@ function setup() {
 
   button3 = createButton('submit');
   button3.position(input.x + input.width, y_offset);
-  button3.mousePressed(on_submit); // TODO - this needs to call a different function
+  button3.mousePressed(on_submit3);
 
   y_offset += 90;
   
@@ -118,14 +123,6 @@ function setup() {
 
 // Called every frame to draw to the screen
 function draw() {
-  // TODO - write text
-  // push();
-  // fill(100, 100, 100, 255);
-  // translate(width / 2, height / 2);
-  // textSize(64);
-  // textAlign(CENTER, CENTER);
-  // text("Press any key to start", 0, 0);
-  // pop();
 }
 
 
@@ -139,14 +136,43 @@ function on_submit() {
   });
 }
 
+function on_submit2() {
+  let text_in = input2.value();
+  input2.value('');
+  // If there's a corresponding question, send it (with the new stance) to the server
+  for (let q of saved_state.open_questions) {
+    if (q.owner == socket.id) {
+      q.stances = [ text_in ];
+      socket.emit("new_question_w_one_stance", q);
+      q.owner = null;
+      break;
+    }
+  }
+}
+
+function on_submit3() {
+  let text_in = input3.value();
+  input3.value('');
+  // If there's a corresponding question, send it (with the new stance) to the server
+  for (let q of saved_state.questions_w_one_stance) {
+    if (q.owner == socket.id) {
+      q.stances.push(text_in);
+      socket.emit("new_question_w_two_stance", q);
+      q.owner = null;
+      break;
+    }
+  }
+}
+
 
 // Updates the text of each prompt
 function update_prompts() {
+  if (!saved_state) return;
   // check open_questions
   prompt2.html('<i>(waiting for question)</i>');
   for (let q of saved_state.open_questions) {
     if (q.owner == socket.id) {
-      prompt2.html('Your question: <i>' + q.question + '</i>');
+      prompt2.html('The question: <i>' + q.question + '</i>');
       break;
     }
   }
@@ -154,15 +180,21 @@ function update_prompts() {
   prompt3.html('<i>(waiting for question)</i>');
   for (let q of saved_state.questions_w_one_stance) {
     if (q.owner == socket.id) {
-      prompt3.html('Your question: <i>' + q.question + '</i>\nThe first stance: <i>' + q.stances[0] + '</i>');
+      prompt3.html('The question: <i>' + q.question + '</i><br>The first stance: <i>' + q.stances[0] + '</i>');
       break;
     }
   }
   // check questions_w_two_stance
   prompt4.html('<i>(waiting for question)</i>');
   for (let q of saved_state.questions_w_two_stance) {
-    if (q.owner == socket.id) {
-      prompt4.html('Your question: <i>' + q.question + '</i>\nThe first stance: <i>' + q.stances[0] + '</i>\nThe second stance: <i>' + q.stances[1] + '</i>');
+    if (q.owners.includes(socket.id)) {
+      let prompt_str = 'The question: <i>' + q.question + '</i><br>';
+      if (q.owners[0] == socket.id) {
+        prompt_str += 'YOUR stance: <i>' + q.stances[0] + '</i><br>OPPOSING stance: <i>' + q.stances[1] + '</i>';
+      } else {
+        prompt_str += 'YOUR stance: <i>' + q.stances[1] + '</i><br>OPPOSING stance: <i>' + q.stances[0] + '</i>';
+      }
+      prompt4.html(prompt_str);
       break;
     }
   }

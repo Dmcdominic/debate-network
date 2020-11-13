@@ -66,6 +66,7 @@ io.on("connection", function(socket) {
         Object.keys(gameState.players).length +
         " players"
     );
+    try_to_distribute();
   });
 
   //when a client disconnects I have to delete its player object
@@ -82,11 +83,11 @@ io.on("connection", function(socket) {
   });
 
   //when I receive an update from a client, update the game state
-  socket.on("clientUpdate", function(obj) {
-    // console.log("clientUpdate received!");
-    if (socket.id != null) {
-    }
-  });
+  // socket.on("clientUpdate", function(obj) {
+  //   // console.log("clientUpdate received!");
+  //   if (socket.id != null) {
+  //   }
+  // });
 
 
   // --- RECEIVE NEW CONTENT FROM PLAYERS ---
@@ -108,6 +109,12 @@ io.on("connection", function(socket) {
       obj.owner = null;
       gameState.players[socket.id].questions_w_one_stance = [];
       gameState.questions_w_one_stance.push(obj);
+      for (let q_index = 0; q_index < gameState.open_questions.length; q_index++) {
+        let q = gameState.open_questions[q_index];
+        if (q.owner == socket.id) {
+          gameState.open_questions.splice(q_index, 1);
+        }
+      }
       try_to_distribute();
     }
   });
@@ -116,8 +123,15 @@ io.on("connection", function(socket) {
     if (socket.id != null) {
       obj.contributors.push(socket.id);
       obj.owner = null;
+      obj.owners = [];
       gameState.players[socket.id].questions_w_two_stance = [];
       gameState.questions_w_two_stance.push(obj);
+      for (let q_index = 0; q_index < gameState.questions_w_one_stance.length; q_index++) {
+        let q = gameState.questions_w_one_stance[q_index];
+        if (q.owner == socket.id) {
+          gameState.questions_w_one_stance.splice(q_index, 1);
+        }
+      }
       try_to_distribute();
     }
   });
@@ -181,12 +195,12 @@ function try_to_distribute() {
     }
   }
   for (let q of gameState.questions_w_two_stance) {
-    if (q.owner) continue;
+    if (q.owners && q.owners.length >= 2) continue;
     for (let socketID in gameState.players) {
       let player = gameState.players[socketID];
       if (player.questions_w_two_stance.length > 0) continue;
       if (q.contributors.includes(socketID)) continue;
-      q.owner = socketID;
+      q.owners.push(socketID);
       player.questions_w_two_stance.push(q);
       break;
     }
