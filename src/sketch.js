@@ -14,9 +14,10 @@ var socket;
 var saved_state;
 
 // input elements
-var input, input2, input3, input4, input5;
-var prompt, prompt2, prompt3, prompt4, prompt5;
-var button, button2, button3, button4, button5;
+var input, input2, input3, input4;
+var prompt, prompt2, prompt3, prompt4;
+var button, button2, button3, button4, buttonU, buttonA, buttonB;
+var greeting4;
 
 
 
@@ -41,13 +42,6 @@ function setup() {
   socket.on("state", updateState);
 
   socket.open();
-
-  //every x time I update the server on my position
-  // setInterval(function() {
-  //   // TODO - update this with some other state data? Or don't send until you've typed/submitted something
-  //   socket.emit("clientUpdate", {
-  //   });
-  // }, UPDATE_TIME);
 
   // ----- Canvas setup -----
   //let c = createCanvas(displayWidth, displayHeight);
@@ -111,13 +105,36 @@ function setup() {
   y_offset += 90;
   
   // Set up "you are debating" input field
-  greeting = createElement('h2', 'Debate your given stance for this question:');
-  greeting.position(20, y_offset);
+  greeting4 = createElement('h2', 'Debate:');
+  greeting4.position(20, y_offset);
   y_offset += 40;
 
   prompt4 = createElement('h3', '<i>(waiting for question)</i>');
   prompt4.position(20, y_offset);
   y_offset += 60;
+
+  buttonU = createButton('undecided');
+  buttonU.position(20, y_offset);
+  buttonU.mousePressed(undecided);
+  y_offset += 20;
+
+  promptA = createElement('h3', '<i>(waiting for stance)</i>');
+  promptA.position(20, y_offset);
+  y_offset += 40;
+
+  buttonA = createButton('lean towards A');
+  buttonA.position(20, y_offset);
+  buttonA.mousePressed(lean_towards_a);
+  y_offset += 20;
+
+  promptB = createElement('h3', '<i>(waiting for stance)</i>');
+  promptB.position(20, y_offset);
+  y_offset += 40;
+
+  buttonB = createButton('lean towards B');
+  buttonB.position(20, y_offset);
+  buttonB.mousePressed(lean_towards_b);
+  y_offset += 40;
 }
 
 
@@ -164,6 +181,21 @@ function on_submit3() {
   }
 }
 
+function undecided() {
+  if (!saved_state.current_debate) return;
+  socket.emit("undecided", {});
+}
+
+function lean_towards_a() {
+  if (!saved_state.current_debate) return;
+  socket.emit("lean_towards_a", {});
+}
+
+function lean_towards_b() {
+  if (!saved_state.current_debate) return;
+  socket.emit("lean_towards_b", {});
+}
+
 
 // Updates the text of each prompt
 function update_prompts() {
@@ -184,20 +216,65 @@ function update_prompts() {
       break;
     }
   }
-  // check questions_w_two_stance
+  // check current_debate
   prompt4.html('<i>(waiting for question)</i>');
-  for (let q of saved_state.questions_w_two_stance) {
+  if (saved_state.current_debate) {
+    let q = saved_state.current_debate;
+    prompt4.html('The question: <i>' + q.question + '</i>');
     if (q.owners.includes(socket.id)) {
-      let prompt_str = 'The question: <i>' + q.question + '</i><br>';
+      greeting4.html('Debate your given stance for this question:');
       if (q.owners[0] == socket.id) {
-        prompt_str += 'YOUR stance: <i>' + q.stances[0] + '</i><br>OPPOSING stance: <i>' + q.stances[1] + '</i>';
+        promptA.html('YOUR stance: <i>' + q.stances[0] + '</i>');
+        promptB.html('OPPOSING stance: <i>' + q.stances[1] + '</i>');
       } else {
-        prompt_str += 'YOUR stance: <i>' + q.stances[1] + '</i><br>OPPOSING stance: <i>' + q.stances[0] + '</i>';
+        promptA.html('OPPOSING stance: <i>' + q.stances[0] + '</i>');
+        promptB.html('YOUR stance: <i>' + q.stances[1] + '</i>');
       }
-      prompt4.html(prompt_str);
-      break;
+    } else {
+      greeting4.html('During the debate, update which side you lean towards:');
+      promptA.html('Stance A: <i>' + q.stances[0] + '</i>');
+      promptB.html('Stance B: <i>' + q.stances[1] + '</i>');
     }
+    // Update button text
+    let total_A = saved_state.current_debate.A.length;
+    let total_B = saved_state.current_debate.B.length;
+    let total_U = Object.keys(saved_state.players).length - total_A - total_B;
+
+    let in_A = false;
+    let index_a = saved_state.current_debate.A.indexOf(socket.id);
+    if (index_a >= 0) {
+      in_A = true;
+    }
+    let in_B = false;
+    let index_b = saved_state.current_debate.B.indexOf(socket.id);
+    if (index_b >= 0) {
+      in_B = true;
+    }
+
+    buttonU.html('undecided (' + total_U + ')' + ((in_A || in_B) ? '' : ' [YOU]'));
+    buttonA.html('lean towards A (' + total_A + ')' + ((!in_A) ? '' : ' [YOU]'));
+    buttonB.html('lean towards B (' + total_B + ')' + ((!in_B) ? '' : ' [YOU]'));
+  } else {
+    greeting4.html('Debate:');
+    prompt4.html('<i>(waiting for question)</i>');
+    promptA.html('<i>(waiting for stance)</i>');
+    promptB.html('<i>(waiting for stance)</i>');
+    buttonU.html('undecided');
+    buttonA.html('lean towards A');
+    buttonB.html('lean towards B');
   }
+  // for (let q of saved_state.questions_w_two_stance) {
+  //   if (q.owners.includes(socket.id)) {
+  //     let prompt_str = 'The question: <i>' + q.question + '</i><br>';
+  //     if (q.owners[0] == socket.id) {
+  //       prompt_str += 'YOUR stance: <i>' + q.stances[0] + '</i><br>OPPOSING stance: <i>' + q.stances[1] + '</i>';
+  //     } else {
+  //       prompt_str += 'YOUR stance: <i>' + q.stances[1] + '</i><br>OPPOSING stance: <i>' + q.stances[0] + '</i>';
+  //     }
+  //     prompt4.html(prompt_str);
+  //     break;
+  //   }
+  // }
 }
 
 

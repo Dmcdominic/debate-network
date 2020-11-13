@@ -24,7 +24,8 @@ var gameState = {
   questions_w_two_stance: [],
   // questions_w_one_debator: [],
   // questions_w_two_debator: [],
-  // current_debate: {}
+  current_debate: null,
+  debate_timer: -1
 };
 
 // http://expressjs.com/en/starter/static-files.html
@@ -136,6 +137,55 @@ io.on("connection", function(socket) {
     }
   });
 
+  // On an undecided message, remove this player from either side
+  socket.on("undecided", function(obj) {
+    if (socket.id != null) {
+      if (!gameState.current_debate) return;
+      let index_a = gameState.current_debate.A.indexOf(socket.id);
+      if (index_a >= 0) {
+        gameState.current_debate.A.splice(index_a, 1);
+      }
+      let index_b = gameState.current_debate.B.indexOf(socket.id);
+      if (index_b >= 0) {
+        gameState.current_debate.B.splice(index_b, 1);
+      }
+    }
+  });
+
+  // On a lean_towards_a message, add them to the A side
+  socket.on("lean_towards_a", function(obj) {
+    if (socket.id != null) {
+      if (!gameState.current_debate) return;
+      let index_a = gameState.current_debate.A.indexOf(socket.id);
+      if (index_a < 0) {
+        gameState.current_debate.A.push(socket.id);
+        // Then also remove from B, if necessary
+        let index_b = gameState.current_debate.B.indexOf(socket.id);
+        if (index_b >= 0) {
+          gameState.current_debate.B.splice(index_b, 1);
+        }
+        try_resolve();
+      }
+    }
+  });
+
+  // On a lean_towards_b message, add them to the B side
+  socket.on("lean_towards_b", function(obj) {
+    if (socket.id != null) {
+      if (!gameState.current_debate) return;
+      let index_b = gameState.current_debate.B.indexOf(socket.id);
+      if (index_b < 0) {
+        gameState.current_debate.B.push(socket.id);
+        // Then also remove from A, if necessary
+        let index_a = gameState.current_debate.A.indexOf(socket.id);
+        if (index_a >= 0) {
+          gameState.current_debate.A.splice(index_a, 1);
+        }
+        try_resolve();
+      }
+    }
+  });
+
   // socket.on("new_question_w_one_debator", function(obj) {
   //   if (socket.id != null) {
   //     obj.contributors.push(socket.id);
@@ -170,8 +220,36 @@ var listener = http.listen(3000, function() {
 });
 
 
+// Decrement the gameState.debate_timer and reset the current_debate if it ends
+// setInterval(function() {
+//   // TODO 
+// }, 1000);
+
+
+// Check if the current_debate can be resolved
+function try_resolve() {
+  if (!gameState.current_debate) return;
+  // Debate ends if everyone is on the same side
+  let total_players = Object.keys(gameState.players).length;
+  let A_won = (gameState.current_debate.A.length == total_players);
+  let B_won = (gameState.current_debate.B.length == total_players);
+  if (!A_won && !B_won) return;
+
+  // Find the current debate in the questions_w_two_stance array and delete it
+  for (let q_index = 0; q_index < gameState.questions_w_two_stance.length; q_index++) {
+    let q = gameState.questions_w_two_stance[q_index];
+    if (q.is_current_debate) {
+      gameState.questions_w_two_stance.splice(q_index, 1);
+      break;
+    }
+  }
+  gameState.current_debate = null;
+}
+
+
 // Iterates over all the current questions and tries to distribute any that aren't owned
 function try_to_distribute() {
+  // Distribute open_questions
   for (let q of gameState.open_questions) {
     if (q.owner) continue;
     for (let socketID in gameState.players) {
@@ -183,6 +261,7 @@ function try_to_distribute() {
       break;
     }
   }
+  // Distribute questions_w_one_stance
   for (let q of gameState.questions_w_one_stance) {
     if (q.owner) continue;
     for (let socketID in gameState.players) {
@@ -194,6 +273,7 @@ function try_to_distribute() {
       break;
     }
   }
+  // Distribute questions_w_two_stance
   for (let q of gameState.questions_w_two_stance) {
     if (q.owners && q.owners.length >= 2) continue;
     for (let socketID in gameState.players) {
@@ -205,6 +285,19 @@ function try_to_distribute() {
       break;
     }
   }
+  // Determine if there should be a new current_debate
+  if (!gameState.current_debate) {
+    for (let q of gameState.questions_w_two_stance) {
+      if (q.owners && q.owners.length >= 2) {
+        q.A = [];
+        q.B = [];
+        q.is_current_debate = true;
+        gameState.current_debate = q;
+        return;
+      }
+    }
+  }
+
   // for (let q of gameState.questions_w_one_debator) {
   //   if (q.owner) continue;
   //   for (let socketID in gameState.players) {
