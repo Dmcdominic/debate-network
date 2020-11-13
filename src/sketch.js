@@ -14,6 +14,7 @@ var socket;
 var saved_state;
 
 // input elements
+var num_players;
 var input, input2, input3, input4;
 var prompt, prompt2, prompt3, prompt4;
 var button, button2, button3, button4, buttonU, buttonA, buttonB;
@@ -53,6 +54,10 @@ function setup() {
   // Title
   let greeting = createElement('h1', 'DEBATE NETWORK');
   greeting.position(20, y_offset);
+  y_offset += 60;
+
+  num_players = createElement('h4', 'Current players: 1?');
+  num_players.position(40, y_offset);
   y_offset += 60;
 
   // Set up "new question" input field
@@ -200,6 +205,9 @@ function lean_towards_b() {
 // Updates the text of each prompt
 function update_prompts() {
   if (!saved_state) return;
+  // Update the number of players
+  let total_num_players = Object.keys(saved_state.players).length;
+  num_players.html('Current players: ' + total_num_players);
   // check open_questions
   prompt2.html('<i>(waiting for question)</i>');
   for (let q of saved_state.open_questions) {
